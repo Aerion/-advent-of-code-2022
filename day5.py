@@ -11,7 +11,7 @@ while line:
         break
     for i in range(stacks_count):
         item = line[i * 4 + 1]
-        if item == ' ':
+        if item == " ":
             continue
         if not stacks[i]:
             stacks[i] = []
@@ -24,15 +24,16 @@ sys.stdin.readline()
 
 while line := sys.stdin.readline():
     line = line.strip()
-    matches = re.match(r'move (\d+) from (\d+) to (\d+)', line)
+    matches = re.match(r"move (\d+) from (\d+) to (\d+)", line)
 
     count = int(matches.group(1))
     original_stack = int(matches.group(2)) - 1
     final_stack = int(matches.group(3)) - 1
+    final_stack_idx = len(stacks[final_stack])
 
     for _ in range(count):
-        stacks[final_stack].append(stacks[original_stack].pop())
+        stacks[final_stack].insert(final_stack_idx, (stacks[original_stack].pop()))
 
 
 for stack in stacks:
-    print(stack.pop(), end='')
+    print(stack.pop(), end="")
