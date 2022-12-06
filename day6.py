@@ -2,7 +2,7 @@ import sys
 
 input = sys.stdin.readline().strip()
 
-MARKER_LENGTH = 4
+MARKER_LENGTH = 14
 last_seen_pos = [-MARKER_LENGTH] * 26
 
 first_noncontinuous_pos = 0
