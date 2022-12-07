@@ -22,15 +22,17 @@ def pretty_print(item: Item, indent: int):
     else:
         print(f"(file, size={item.size})")
 
-def get_total_folder_size_under(folder: Item, max_size: int):
-    res = 0
-    if folder.size < max_size:
-        res = folder.size
+
+def get_smallest_folder_above(folder: Item, min_size: int):
+    res = None
+    if folder.size > min_size:
+        res = folder
     for child in folder.children.values():
         if child.is_folder:
-            res += get_total_folder_size_under(child, max_size)
+            smallest_child = get_smallest_folder_above(child, min_size)
+            if smallest_child and (not res or smallest_child.size < res.size):
+                res = smallest_child
     return res
-
 
 root_folder = Item(True, 0, "/", None, {})
 
@@ -80,10 +82,16 @@ while i < len(lines):
             continue
 
         if destination not in cur_folder.children:
-            cur_folder.children[destination] = Item(True, 0, destination, cur_folder, {})
+            cur_folder.children[destination] = Item(
+                True, 0, destination, cur_folder, {}
+            )
 
         cur_folder = cur_folder.children[destination]
 
-pretty_print(root_folder, 0)
 
-print(get_total_folder_size_under(root_folder, 100_000))
+total_space = 70_000_000
+unused_space = total_space - root_folder.size
+space_to_free = 30_000_000 - unused_space
+print(f"root folder size: {root_folder.size}")
+print(f"space to free: {space_to_free}")
+print(get_smallest_folder_above(root_folder, space_to_free).size)
