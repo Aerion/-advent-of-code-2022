@@ -2,17 +2,7 @@ from dataclasses import dataclass
 import sys
 
 
-@dataclass
-class Tree:
-    height: int
-    max_from_top: int
-    max_from_bottom: int
-    max_from_left: int
-    max_from_right: int
-    visible: bool
-
-
-arr: list[list[Tree]] = []
+arr: list[list[int]] = []
 
 
 y = 0
@@ -21,65 +11,55 @@ while line := sys.stdin.readline():
     arr.append([])
 
     for x, char in enumerate(line):
-        arr[y].append(
-            Tree(int(char), int(char), int(char), int(char), int(char), False)
-        )
+        arr[y].append(int(char))
 
     y += 1
 
-for y in range(len(arr)):
-    arr[y][0].visible = True
-    arr[y][len(arr[0]) - 1].visible = True
-for x in range(len(arr[0])):
-    arr[0][x].visible = True
-    arr[len(arr) - 1][x].visible = True
-
-
-# Those four loops can probably be grouped, but well
-for x in range(1, len(arr[0])):
-    for y in range(1, len(arr)):
-        top_node = arr[y - 1][x]
-        cur_node = arr[y][x]
-        if top_node.max_from_top < cur_node.height:
-            cur_node.max_from_top = cur_node.height
-            if not cur_node.visible:
-                cur_node.visible = True
-        else:
-            cur_node.max_from_top = top_node.max_from_top
-
-        bottom_node = arr[len(arr) - y][x]
-        cur_node = arr[len(arr) - y - 1][x]
-        if bottom_node.max_from_bottom < cur_node.height:
-            cur_node.max_from_bottom = cur_node.height
-            if not cur_node.visible:
-                cur_node.visible = True
-        else:
-            cur_node.max_from_bottom = bottom_node.max_from_bottom
-
-
-for y in range(1, len(arr)):
-    for x in range(1, len(arr[y])):
-        left_node = arr[y][x - 1]
-        cur_node = arr[y][x]
-        if left_node.max_from_left < cur_node.height:
-            cur_node.max_from_left = cur_node.height
-            if not cur_node.visible:
-                cur_node.visible = True
-        else:
-            cur_node.max_from_left = left_node.max_from_left
-
-        right_node = arr[y][len(arr[y]) - x]
-        cur_node = arr[y][len(arr[y]) - x - 1]
-        if right_node.max_from_right < cur_node.height:
-            cur_node.max_from_right = cur_node.height
-            if not cur_node.visible:
-                cur_node.visible = True
-        else:
-            cur_node.max_from_right = right_node.max_from_right
-
-total_visible_count = 0
+max_scenic_score = 0
 for y in range(len(arr)):
     for x in range(len(arr[y])):
-        if arr[y][x].visible:
-            total_visible_count += 1
-print(total_visible_count)
+        cur_height = arr[y][x]
+
+        visible_from_top = 0
+        visible_from_bottom = 0
+        visible_from_left = 0
+        visible_from_right = 0
+
+        top_y = y - 1
+        while top_y >= 0:
+            visible_from_top += 1
+            if arr[top_y][x] >= cur_height:
+                break
+            top_y -= 1
+
+        bottom_y = y + 1
+        while bottom_y < len(arr):
+            visible_from_bottom += 1
+            if arr[bottom_y][x] >= cur_height:
+                break
+            bottom_y += 1
+
+        left_x = x - 1
+        while left_x >= 0:
+            visible_from_left += 1
+            if arr[y][left_x] >= cur_height:
+                break
+            left_x -= 1
+
+        right_x = x + 1
+        while right_x < len(arr[y]):
+            visible_from_right += 1
+            if arr[y][right_x] >= cur_height:
+                break
+            right_x += 1
+
+        scenic_score = (
+            visible_from_bottom
+            * visible_from_left
+            * visible_from_right
+            * visible_from_top
+        )
+        if scenic_score > max_scenic_score:
+            max_scenic_score = scenic_score
+
+print(max_scenic_score)
