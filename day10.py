@@ -1,11 +1,10 @@
 import sys
 
-total_signal_strength = 0
 cpu_cycle = 1
 rx = 1
-
+crt_row = ""
 while line := sys.stdin.readline():
-    parts = line.strip().split(' ')
+    parts = line.strip().split(" ")
     instruction = parts[0]
 
     if instruction == "noop":
@@ -14,13 +13,15 @@ while line := sys.stdin.readline():
         cost = 2
 
     for _ in range(cost):
-        print(f"{cpu_cycle}: {line.strip()} ; rx: {rx}")
-        if cpu_cycle in [20, 60, 100, 140, 180, 220]:
-            total_signal_strength += rx * cpu_cycle
+        sprite_positions = list(range(max(rx - 1, 0), min(rx + 1, 40) + 1, 1))
+        if ((cpu_cycle - 1) % 40) in sprite_positions:
+            print("#", end="")
+        else:
+            print(".", end="")
+        if cpu_cycle % 40 == 0:
+            print()
 
         cpu_cycle += 1
 
     if instruction == "addx":
         rx += int(parts[1])
-
-print(total_signal_strength)
