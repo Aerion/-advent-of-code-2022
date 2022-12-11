@@ -2,11 +2,13 @@ import sys
 from dataclasses import dataclass
 from typing import Callable
 
-ROUND_COUNT = 20
+ROUND_COUNT = 10000
+supermod = 1
 
 
 def eval_operation(operation_text: str, old: int):
-    return eval(operation_text) // 3
+    new = eval(operation_text)
+    return new % supermod
 
 
 @dataclass
@@ -28,6 +30,7 @@ while line := sys.stdin.readline():
     if_true_monkey_idx = int(sys.stdin.readline().strip().split(" ")[-1])
     if_false_monkey_idx = int(sys.stdin.readline().strip().split(" ")[-1])
     sys.stdin.readline()
+    supermod *= divisible_by_test
 
     operation = (lambda txt: lambda item: eval_operation(txt, item))(operation_text)
     throw_to = (lambda if_t, if_f, div: lambda item: if_t if item % div == 0 else if_f)(
@@ -35,7 +38,7 @@ while line := sys.stdin.readline():
     )
     monkeys.append(Monkey(starting_items, operation, throw_to))
 
-for _ in range(ROUND_COUNT):
+for c in range(ROUND_COUNT):
     for monkey in monkeys:
         while monkey.items:
             monkey.inspection_count += 1
