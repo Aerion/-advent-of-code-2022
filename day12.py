@@ -14,7 +14,7 @@ class Position:
     y: int
 
 
-start_pos = Position(0, 0)
+q = []
 end_pos = Position(0, 0)
 
 nodes: list[list[Node]] = []
@@ -23,16 +23,15 @@ while line := sys.stdin.readline().strip():
     row = []
     for x, c in enumerate(line):
         if c == "S":
-            start_pos = Position(x, y)
             c = "a"
         elif c == "E":
             end_pos = Position(x, y)
             c = "z"
+        if c == "a":
+            q.append((Position(x, y), 0))
         row.append(Node(ord(c) - ord("a"), False))
     nodes.append(row)
     y += 1
-
-q = [(start_pos, 0)]
 
 print(f"Target: {end_pos}")
 
