@@ -1,12 +1,13 @@
 import sys
+from functools import cmp_to_key
 
 
-def is_ordered(left, right):
+def compare(left, right):
     if type(left) == int and type(right) == int:
         if left == right:
             # Equal, unknown
-            return None
-        return left < right
+            return 0
+        return -1 if left < right else 1
 
     if type(left) == int:
         left = [left]
@@ -16,28 +17,30 @@ def is_ordered(left, right):
     # Both are lists now
     i = 0
     while i < len(left) and i < len(right):
-        ordered = is_ordered(left[i], right[i])
-        if ordered != None:
-            return ordered
+        comparison = compare(left[i], right[i])
+        if comparison != 0:
+            return comparison
         # Equal, continue
         i += 1
 
     if i == len(left) and i == len(right):
         # Equal, unknown
-        return None
+        return 0
 
-    return i == len(left)
+    return -1 if i == len(left) else 1
 
 
 sum_ordered_indexes = 0
-idx = 0
+
+packets = []
 while line := sys.stdin.readline():
-    idx += 1
-    left = eval(line)
-    right = eval(sys.stdin.readline())
-    sys.stdin.readline()
+    if line.strip():
+        packets.append(eval(line))
 
-    if is_ordered(left, right):
-        sum_ordered_indexes += idx
+MAGIC_PACKET_1 = [[2]]
+MAGIC_PACKET_2 = [[6]]
+packets.append(MAGIC_PACKET_1)
+packets.append(MAGIC_PACKET_2)
 
-print(sum_ordered_indexes)
+packets.sort(key=cmp_to_key(compare))
+print((packets.index(MAGIC_PACKET_1) + 1) * (packets.index(MAGIC_PACKET_2) + 1))
