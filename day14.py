@@ -17,24 +17,27 @@ def print_grid(grid: list[list[str]], x_offset: int):
     print()
     max_x = len(grid[0])
     header_lines = len(str(max_x + x_offset))
+    nbr_chars = len(str(len(grid)))
     for i in range(header_lines):
-        print("  ", end="")
+        print(" " * nbr_chars, end="")
         for x in range(x_offset, max_x + x_offset):
             if x % 5 == 0:
-                print(str(x)[i], end="")
+                s = str(x)
+                if i < len(s):
+                    print(str(x)[i], end="")
             else:
                 print(" ", end="")
         print()
 
     for y in range(len(grid)):
-        print(y, end=" ")
+        print(str(y).ljust(nbr_chars), end=" ")
         for x in range(max_x):
             print(grid[y][x], end="")
         print()
 
 
-min_x = 500
-max_x = 500
+min_x = 0
+max_x = 1000
 max_y = 0
 rocks: list[Pos] = []
 while line := sys.stdin.readline():
@@ -64,6 +67,8 @@ while line := sys.stdin.readline():
 grid: list[list[str]] = []
 for _ in range(max_y + 1):
     grid.append([AIR] * (max_x - min_x + 1))
+grid.append([AIR] * len(grid[0]))
+grid.append([ROCK] * len(grid[0]))
 
 for rock in rocks:
     grid[rock.y][rock.x - min_x] = ROCK
@@ -71,6 +76,7 @@ for rock in rocks:
 grid[0][500 - min_x] = SOURCE
 
 print_grid(grid, min_x)
+# exit()
 
 i = 0
 while True:
@@ -92,6 +98,8 @@ while True:
         break
     if y + 1 == len(grid):
         break
+    if y == 0 and x == 500 - min_x:
+        break
 
     grid[y][x] = SAND
     i += 1
@@ -99,4 +107,4 @@ while True:
     print(i)
 
 print_grid(grid, min_x)
-print(i)
+print(i + 1)
