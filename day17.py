@@ -2,6 +2,7 @@ from enum import Enum
 from dataclasses import dataclass
 import sys
 from typing import Optional
+from tqdm import tqdm
 
 CHAMBER_WIDTH = 7
 
@@ -22,9 +23,11 @@ class ROCK_TYPE(Enum):
 
 class Rock:
     parts: list[RockPart]
+    type: ROCK_TYPE
 
-    def __init__(self, parts: list[RockPart]):
+    def __init__(self, parts: list[RockPart], rock_type: ROCK_TYPE):
         self.parts = parts
+        self.type = rock_type
 
     def _move(self, x: int, y: int, obstructed_blocks: set[tuple[int, int]]):
         if any(
@@ -84,8 +87,9 @@ ROCK_TYPES = [t for t in ROCK_TYPE]
 
 
 def create_rock(rock_count: int, max_height: int):
-    rock_parts = create_rock_parts(ROCK_TYPES[rock_count % len(ROCK_TYPES)], max_height)
-    return Rock(rock_parts)
+    rock_type = ROCK_TYPES[rock_count % len(ROCK_TYPES)]
+    rock_parts = create_rock_parts(rock_type, max_height)
+    return Rock(rock_parts, rock_type)
 
 
 def print_grid(
@@ -93,9 +97,11 @@ def print_grid(
     max_height: int,
     tmp_rock: Optional[Rock] = None,
 ):
+
+    return
     rock_parts = set((part.x, part.y) for part in tmp_rock.parts) if tmp_rock else []
 
-    for y in range(max_height + 6, -1, -1):
+    for y in range(max_height + 6, max_height - 10, -1):
         print("|", end="")
         for x in range(CHAMBER_WIDTH):
             if (x, y) in rock_parts:
@@ -111,12 +117,28 @@ def print_grid(
 jet_pattern = sys.stdin.readline().strip()
 jet_pattern_idx = 0
 
+cycle_detection_pattern: list[Rock] = []
+cycle_detection_pattern_length = len(ROCK_TYPES) * 2
+cycle_detection_pattern_evaluation_start = 10_000
+cycle_detection_pattern_height_start = 0
+cycle_detection_pattern_height = 0
+cycle_detection_rocks_between_patterns = 0
+
+cycle_detection_index = 0
+
+NUMBER_OF_ROCKS = 1000000000000 # 2022 # 100_000 # 2022 # 1000000000000
 
 obstructed_blocks: set[tuple[int, int]] = set()
 max_height = -1
-for i in range(2022):
-    rock = create_rock(i, max_height +1)
-    # print_grid(obstructed_blocks, max_height, rock)
+i = 0
+skipped_rocks = 0
+skipped_height = 0
+a = 0
+while i < NUMBER_OF_ROCKS:
+    # print(i)
+    rock = create_rock(i, max_height + 1)
+    if skipped_rocks > 0:
+        print_grid(obstructed_blocks, max_height, rock)
 
     while True:
         jet_direction = jet_pattern[jet_pattern_idx]
@@ -129,13 +151,20 @@ for i in range(2022):
         elif jet_direction == "<":
             rock.move_left(obstructed_blocks)
 
-        # print_grid(obstructed_blocks, max_height, rock)
+        # if skipped_rocks > 0:
+        #     print_grid(obstructed_blocks, max_height, rock)
 
         if not rock.move_down(obstructed_blocks):
             break
 
-        # print_grid(obstructed_blocks, max_height, rock)
-    # print_grid(obstructed_blocks, max_height, rock)
+        # if skipped_rocks > 0:
+        #     print_grid(obstructed_blocks, max_height, rock)
+    if skipped_rocks > 0:
+        print_grid(obstructed_blocks, max_height, rock)
+        a += 1
+        if a > 5:
+            pass
+            # exit(0)
 
     highest_rock_part = None
     for part in rock.parts:
@@ -146,4 +175,49 @@ for i in range(2022):
     rock_height = max((part.y for part in rock.parts))
     max_height = max(max_height, rock_height)
 
+    i += 1
+
+    if i <= cycle_detection_pattern_evaluation_start or skipped_rocks > 0:
+        continue
+
+    if len(cycle_detection_pattern) == 0:
+        cycle_detection_pattern_height_start = max_height
+
+    if len(cycle_detection_pattern) < cycle_detection_pattern_length:
+        cycle_detection_pattern.append(rock)
+    else:
+        if (
+            cycle_detection_pattern[cycle_detection_index].type == rock.type
+            and cycle_detection_pattern[cycle_detection_index].parts[0].x == rock.parts[0].x
+        ):
+            cycle_detection_index += 1
+        else:
+            cycle_detection_index = 0
+
+    if cycle_detection_index == cycle_detection_pattern_length:
+        true_pattern_length = i - cycle_detection_pattern_evaluation_start
+        cycle_detection_pattern_height = (
+            max_height - cycle_detection_pattern_height_start
+        )
+        print(f"{i=} {cycle_detection_pattern_height=} {true_pattern_length=}")
+        patterns_to_add = (NUMBER_OF_ROCKS - i) // (true_pattern_length)
+        skipped_height = (patterns_to_add) * (cycle_detection_pattern_height)
+        rocks_to_add = patterns_to_add * (true_pattern_length)
+
+        print(f"Added {patterns_to_add} patterns for {rocks_to_add} rocks, skipping {skipped_height} height")
+
+        cycle_detection_index = 0
+        cycle_detection_pattern_height_start = max_height
+        cycle_detection_pattern_evaluation_start = i
+
+        # TODO: prendre deuxieme iteration
+        if a == 0:
+            a += 1
+            continue
+
+        i += rocks_to_add
+        skipped_rocks = rocks_to_add
+
+
 print(max_height + 1)
+print(max_height + 1 + skipped_height)
