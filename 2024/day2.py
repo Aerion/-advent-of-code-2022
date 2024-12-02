@@ -13,29 +13,37 @@ if EXAMPLE_IDX is not None:
 else:
     print(f"Using PROD data")
 
-result = []
-for line in data.splitlines():
-    levels = [*map(int, line.split())]
+def check(level, prev, is_increasing):
+    diff = abs(level - prev)
+    if diff < 1 or diff > 3:
+        return False
 
-    is_valid = True
+    if not ((is_increasing and level > prev) or (not is_increasing and level < prev)):
+        return False
+
+    return True
+
+def check_levels(levels, invalid_count):
+    print(levels, invalid_count)
     is_increasing = levels[0] < levels[1]
     prev = levels[0]
+    idx = 1
     for level in levels[1:]:
-        diff = abs(level - prev)
-
-        if diff < 1 or diff > 3:
-            print(diff)
-            is_valid = False
-            break
-
-        if not ((is_increasing and level > prev) or (not is_increasing and level < prev)):
-            print(prev, level, is_increasing)
-            is_valid = False
-            break
+        if not check(level, prev, is_increasing):
+            invalid_count += 1
+            if invalid_count > 1:
+                return False
+            return check_levels(levels[0:idx] + levels[idx + 1:], invalid_count) or check_levels(levels[1:], invalid_count) or check_levels(levels[0:idx-1] + levels[idx:], invalid_count)
     
         prev = level
+        idx += 1
 
-    if is_valid:
-        result.append(levels)
+    return True
 
-print(f"Result: {len(result)}")
+result = 0
+for line in data.splitlines():
+    levels = [*map(int, line.split())]
+    if check_levels(levels, 0):
+        result += 1
+
+print(f"Result: {result}")
