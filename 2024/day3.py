@@ -15,10 +15,19 @@ else:
     print(f"Using PROD data")
 
 result = 0
+enabled = True
 for line in data.splitlines():
-    mults = re.finditer(r'mul\((\d+),(\d+)\)', line)
-    for mult in mults:
-        a, b = mult.groups()
-        result += int(a)*int(b)
+    for i in range(len(line)):
+        item = line[i:i+15]
+        if item.startswith("do()"):
+            enabled = True
+            continue
+        if item.startswith("don't()"):
+            enabled = False
+            continue
+        match = re.match(r'mul\((\d{1,3}),(\d{1,3})\)', item)
+        if match and enabled:
+            a, b = map(int, match.groups())
+            result += a*b
 
 print(f"Result: {result}")
