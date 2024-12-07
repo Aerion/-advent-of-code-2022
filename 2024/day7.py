@@ -14,7 +14,7 @@ else:
     print(f"Using PROD data")
 
 def is_valid(cur: int, target: int, numbers: list[int]):
-    print(cur, target, numbers)
+    #print(cur, target, numbers)
 
     if cur == target and not numbers:
         return True
@@ -23,7 +23,7 @@ def is_valid(cur: int, target: int, numbers: list[int]):
         return False
     
     n = numbers[0]
-    return is_valid(cur * n, target, numbers[1:]) or is_valid(cur + n, target, numbers[1:])
+    return is_valid(cur * n, target, numbers[1:]) or is_valid(cur + n, target, numbers[1:]) or is_valid(int(f"{cur}{n}"), target, numbers[1:])
 
 result = 0
 for line in data.splitlines():
