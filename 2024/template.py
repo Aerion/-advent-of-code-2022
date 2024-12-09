@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from aocd import puzzle
+from aocd import puzzle, submit
+from collections import defaultdict
 
 EXAMPLE_IDX = 0
 
@@ -18,3 +19,5 @@ for line in data.splitlines():
     pass
 
 print(f"Result: {result}")
+if EXAMPLE_IDX is None:
+    submit(result)
