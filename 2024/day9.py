@@ -14,11 +14,16 @@ if EXAMPLE_IDX is not None:
 else:
     print(f"Using PROD data")
 
+
+free_list_pos_size: list[tuple[int, int]] = []
+file_pos_id_length: list[tuple[int, int, int]] = []
+
 disk_map = []
 i = 0
 blocks_count = -1
 while i < len(data):
     blocks_count += 1
+    file_pos_id_length.append((len(disk_map), blocks_count, int(data[i])))
     for x in range(int(data[i])):
         disk_map.append(blocks_count)
     i += 1
@@ -27,31 +32,43 @@ while i < len(data):
     if i >= len(data):
         break
 
+    free_list_pos_size.append((len(disk_map), int(data[i])))
     for x in range(int(data[i])):
         disk_map.append('.')
     i += 1
 
 print(data)
 print("".join(str(x) for x in disk_map))
+#print(free_list_pos_size)
+#print(file_pos_id_length)
+
+for file_pos, file_id, file_length in reversed(file_pos_id_length):
+    for free_idx, (free_pos, free_size) in enumerate(free_list_pos_size):
+        if free_pos > file_pos:
+            # No candidate
+            break
+        if free_size < file_length:
+            # Too small
+            continue
+        # Found space
+        for i in range(file_length):
+            disk_map[free_pos + i] = file_id
+            disk_map[file_pos + i] = '.'
+        
+        # Update the size available for the free block
+        free_list_pos_size[free_idx] = (free_pos + file_length, free_size - file_length)
+        break
+    
+    #print("".join(str(x) for x in disk_map))
+    #print(free_list_pos_size)
+
+print("".join(str(x) for x in disk_map))
 
 result = 0
-left = 0
-right = len(disk_map) - 1
-while left < right:
-    print(left, right)
+for left in range(len(disk_map)):
     if disk_map[left] == '.':
-        while disk_map[right] == '.' and left < right:
-            right -= 1
-            continue
-        if left >= right:
-            print("It's the end")
-            break
-        disk_map[left] = disk_map[right]
-        disk_map[right] = '.'
-
-    print(left, right)
+        continue
     result += left * disk_map[left]
-    left += 1
     
 
 print(f"Result: {result}")
