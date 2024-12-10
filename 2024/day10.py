@@ -46,7 +46,21 @@ data="""8901....
 32.19.12
 .13298.1
 1.456732"""
-'''
+
+data =""".....0.
+..4321.
+..5..2.
+..6543.
+..7..4.
+..8765.
+..9...."""
+data = """..90..9
+...1.98
+...2..7
+6543456
+765.987
+876....
+987...."""'''
 print(f"Puzzle #{puzzle.day}")
 
 if EXAMPLE_IDX is not None:
@@ -55,7 +69,7 @@ else:
     print(f"Using PROD data")
 
 def explore(x, y, map, visited, candidate):
-    if (x, y) in visited or x < 0 or y < 0 or x >= len(map[0]) or y >= len(map):
+    if x < 0 or y < 0 or x >= len(map[0]) or y >= len(map):
         return 0
     if map[y][x] == candidate:
         print(candidate, x, y)
@@ -72,8 +86,8 @@ for y, row in enumerate(map):
     for x, char in enumerate(row):
         if char == 0:
             visited = set()
-            explore(x, y, map, visited, 0)
-            result += len(visited)
+            result += explore(x, y, map, visited, 0)
+            # result += len(visited)
             print(result)
 
 
