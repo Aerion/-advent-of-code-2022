@@ -19,5 +19,5 @@ for line in data.splitlines():
     pass
 
 print(f"Result: {result}")
-if EXAMPLE_IDX is None:
+if EXAMPLE_IDX is None and data == puzzle.input_data:
     submit(result)
