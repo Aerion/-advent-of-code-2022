@@ -53,11 +53,11 @@ def print_map(map, path = []):
 q = []
 heapq.heappush(q, (0, *start, 0, []))
 result = 1000000000000000000000 * len(map) * len(map)
-result_path = None
+result_paths = set()
 score_by_visited = {}
 while q:
     score, x, y, dir_idx, path = heapq.heappop(q)
-    if score >= score_by_visited.get((x, y, dir_idx), 99999999999999999999999999):
+    if score > score_by_visited.get((x, y, dir_idx), 99999999999999999999999999):
         continue
     score_by_visited[(x, y, dir_idx)] = score
     if score > result:
@@ -67,7 +67,12 @@ while q:
     if (x, y) == end:
         print(score)
         #print_map(map, path)
-        result = min(score, result)
+        if score < result:
+            result_paths = set()
+            result = score
+        if result == score:
+            for item in path:
+                result_paths.add((item[0], item[1]))
         continue
     #print(score, x, y, dir_idx)
     #print_map(map, path)
@@ -77,6 +82,7 @@ while q:
         new_dir_idx = (dir_idx + i) % len(directions)
         heapq.heappush(q, (score + 1000, x, y, new_dir_idx, path + [(x, y, new_dir_idx)]))
 
+result = len(result_paths) + 1
 print(f"Result: {result}")
 if EXAMPLE_IDX is None and data == puzzle.input_data:
     submit(result)
