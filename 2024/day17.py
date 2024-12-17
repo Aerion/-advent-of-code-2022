@@ -60,9 +60,40 @@ def debug(str):
 
 debug(registers)
 
-result = []
+def get_digit(a):
+    b = a % 8
+    b = b ^ 5
+    c = a >> b
+    b = b ^ 6
+    b = b ^ c
+    return b % 8
+
+def find_digit(a, instructions, idx):
+    if idx < 0:
+        return [a]
+
+    a <<= 3
+    valid_ones = []
+    target = instructions[idx]
+    for i in range(8):
+        candidate = a | i
+        if get_digit(candidate) == target:
+            valid_ones.append(candidate)
+    res = []
+    for valid_one in sorted(valid_ones):
+        res.extend(find_digit(valid_one, instructions, idx - 1))
+    return res
+
 instructions = [int(x) for x in s2.split(" ")[1].split(",")]
-debug(instructions)
+
+possibilities = find_digit(0, instructions, len(instructions) - 1)
+print(len(possibilities))
+print(possibilities)
+print(min(possibilities))
+
+exit(0)
+
+result = []
 ip = -1
 while ip + 1 < len(instructions):
     def get_literal():
