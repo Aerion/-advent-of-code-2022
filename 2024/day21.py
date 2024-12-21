@@ -4,7 +4,7 @@ from aocd import puzzle, submit
 from collections import defaultdict
 from functools import cache
 
-EXAMPLE_IDX = 0
+EXAMPLE_IDX = None
 
 data = (puzzle.examples[EXAMPLE_IDX] if EXAMPLE_IDX is not None else puzzle).input_data
 if EXAMPLE_IDX == 0:
@@ -124,20 +124,26 @@ def get_pad_sequences_for_full_line(line, is_numpad):
 result = 0
 for line in data.splitlines():
     code = int(line[:-1])
-    line_result = 99999999999999999999
+    line_result = "A" * 99999
 
     numpad_sequences = get_pad_sequences_for_full_line(line, True)
     print(numpad_sequences)
 
     for numpad_sequence in numpad_sequences:
-        print(f"Processing {numpad_sequence}")
+        debug(f"Processing {numpad_sequence}")
         dirpad_sequences = get_pad_sequences_for_full_line(numpad_sequence, False)
-        print(dirpad_sequences)
+        debug(dirpad_sequences)
 
-    exit(0)
-    continue
-    result += line_result * code
-    exit(0)
+        for dirpad_sequence in dirpad_sequences:
+            nested_dirpad_sequences = get_pad_sequences_for_full_line(dirpad_sequence, False)
+
+            for nested_dirpad_sequence in nested_dirpad_sequences:
+                #print(nested_dirpad_sequence)
+                if len(line_result) >= len(nested_dirpad_sequence):
+                    line_result = nested_dirpad_sequence
+
+    print(f"Minimum: {line_result} ({len(line_result)=})")
+    result += (len(line_result)) * code
 
 print(f"Result: {result}")
 if EXAMPLE_IDX is None and data == puzzle.input_data:
