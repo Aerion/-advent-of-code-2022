@@ -100,7 +100,7 @@ def pad_dfs(start_pos: tuple[int, int], end_pos: tuple[int, int], path: list[str
     
     return result
 
-def get_pad_sequences_for_full_line(idx, input, output, is_numpad):
+def get_pad_sequences_for_line_idx(idx, input, output, is_numpad):
     if idx == len(input):
         return [output]
 
@@ -112,23 +112,26 @@ def get_pad_sequences_for_full_line(idx, input, output, is_numpad):
 
     result = []
     for sequence in pad_sequences:
-        for leaf_output in get_pad_sequences_for_full_line(idx + 1, input, output + sequence, is_numpad):
+        for leaf_output in get_pad_sequences_for_line_idx(idx + 1, input, output + sequence, is_numpad):
             result.append(leaf_output.copy())
     
     return result
 
+@cache
+def get_pad_sequences_for_full_line(line, is_numpad):
+    return ["".join(x) for x in get_pad_sequences_for_line_idx(0, line, [], is_numpad)]
 
 result = 0
 for line in data.splitlines():
     code = int(line[:-1])
     line_result = 99999999999999999999
 
-    numpad_sequences = ["".join(x) for x in get_pad_sequences_for_full_line(0, line, [], True)]
+    numpad_sequences = get_pad_sequences_for_full_line(line, True)
     print(numpad_sequences)
 
     for numpad_sequence in numpad_sequences:
         print(f"Processing {numpad_sequence}")
-        dirpad_sequences = ["".join(x) for x in get_pad_sequences_for_full_line(0, numpad_sequence, [], False)]
+        dirpad_sequences = get_pad_sequences_for_full_line(numpad_sequence, False)
         print(dirpad_sequences)
 
     exit(0)
