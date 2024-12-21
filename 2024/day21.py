@@ -56,13 +56,13 @@ def get_final_dirpad_sequences(start, target):
 
 @cache
 def get_numpad_sequences_for_button(start, target):
-    return numpad_dfs(numpad[start], numpad[target], [])
+    return pad_dfs(numpad[start], numpad[target], [], 3, 4, (0, 3))
 
 def debug(str):
     return
     print(str)
 
-def numpad_dfs(start_pos: tuple[int, int], end_pos: tuple[int, int], path: list[str]):
+def pad_dfs(start_pos: tuple[int, int], end_pos: tuple[int, int], path: list[str], width: int, height: int, forbidden_gap: tuple[int, int]):
     if start_pos == end_pos:
         # Won
         return [path + ["A"]]
@@ -83,14 +83,14 @@ def numpad_dfs(start_pos: tuple[int, int], end_pos: tuple[int, int], path: list[
     for possibility in possibilities:
         x_inc, y_inc = vector_by_numpad_dir[possibility]
         new_x, new_y = start_pos[0] + x_inc, start_pos[1] + y_inc
-        if (new_x, new_y) == (0, 3):
+        if (new_x, new_y) == forbidden_gap:
             debug("Inaccessible empty gap")
             continue
-        if new_x < 0 or new_x > 2 or new_y < 0 or new_y > 3:
+        if new_x < 0 or new_x > width - 1 or new_y < 0 or new_y > height - 1:
             assert False # If we end up there, the possibilities were badly computed
 
         path.append(possibility)
-        for valid_path in numpad_dfs((new_x, new_y), end_pos, path):
+        for valid_path in pad_dfs((new_x, new_y), end_pos, path, width, height, forbidden_gap):
             result.append(tuple(valid_path))
         path.pop()
     
