@@ -58,6 +58,10 @@ def get_final_dirpad_sequences(start, target):
 def get_numpad_sequences_for_button(start, target):
     return pad_dfs(numpad[start], numpad[target], [], 3, 4, (0, 3))
 
+@cache
+def get_dirpad_sequences_for_button(start, target):
+    return pad_dfs(dirpad[start], dirpad[target], [], 3, 2, (0, 0))
+
 def debug(str):
     return
     print(str)
@@ -96,18 +100,19 @@ def pad_dfs(start_pos: tuple[int, int], end_pos: tuple[int, int], path: list[str
     
     return result
 
-def get_numpad_sequences_for_full_line(idx, input, output):
+def get_pad_sequences_for_full_line(idx, input, output, is_numpad):
     if idx == len(input):
         return [output]
 
     numpad_target = line[idx]
     start = 'A' if idx == 0 else line[idx - 1]
     
-    numpad_sequences = get_numpad_sequences_for_button(start, numpad_target)
+    pad_function = get_numpad_sequences_for_button if is_numpad else get_dirpad_sequences_for_button
+    pad_sequences = pad_function(start, numpad_target)
 
     result = []
-    for sequence in numpad_sequences:
-        for leaf_output in get_numpad_sequences_for_full_line(idx + 1, input, output + sequence):
+    for sequence in pad_sequences:
+        for leaf_output in get_pad_sequences_for_full_line(idx + 1, input, output + sequence, is_numpad):
             result.append(tuple(leaf_output))
     
     return result
@@ -118,7 +123,7 @@ for line in data.splitlines():
     code = int(line[:-1])
     line_result = 0
 
-    numpad_sequences = ["".join(x) for x in get_numpad_sequences_for_full_line(0, line, ())]
+    numpad_sequences = ["".join(x) for x in get_pad_sequences_for_full_line(0, line, (), True)]
     print(numpad_sequences)
     continue
     result += line_result * code
