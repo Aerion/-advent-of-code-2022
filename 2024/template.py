@@ -6,6 +6,9 @@ from collections import defaultdict
 EXAMPLE_IDX = 0
 
 data = (puzzle.examples[EXAMPLE_IDX] if EXAMPLE_IDX is not None else puzzle).input_data
+if EXAMPLE_IDX == 0:
+    # Override data if needed
+    pass
 
 print(f"Puzzle #{puzzle.day}")
 

@@ -4,6 +4,8 @@ from aocd import puzzle, submit
 from collections import defaultdict
 from dataclasses import dataclass
 
+#def print(*args):
+#    return
 
 @dataclass
 class Node:
@@ -38,17 +40,44 @@ for line in data.splitlines():
     nodes_by_name[left].connected_names.add(right)
     nodes_by_name[right].connected_names.add(left)
 
-result = 0
-matches = set()
-for node_name, node in nodes_by_name.items():
-    if node_name[0] == "t":
-        for connected_name in node.connected_names:
-            connected_node = nodes_by_name[connected_name]
-            common_nodes = node.connected_names & connected_node.connected_names
-            for common_node in common_nodes:
-                matches.add(tuple(sorted((node_name, connected_name, common_node))))
+def find_maximal_cliques(clique: set[str], candidates: set[str], ignored: set[str]):
+    if len(clique) + len(candidates) < 13:
+        # Optim?
+        return []
+    if not candidates:
+        # No more candidates to visit, we explored every common vertex of the clique
+        if not ignored:
+            # Nothing was ignored, it's a maximal clique
+            if len(clique) == 13:
+                print("n".join(sorted(clique)))
+                exit(0)
+            return [tuple(clique)]
 
-result = len(matches)
+        return []
+    
+    cliques = []
+    for candidate_name in candidates:
+        # For each vertex adjacent to our node
+        candidate = nodes_by_name[candidate_name]
+
+        # Future candidates are the adjacent of this adjacent node that are also part of the potential clique we're building.
+        # Indeed, the current candidates are the ones common for each vertex visited so far in the clique
+        future_candidates = candidate.connected_names & candidates
+
+        # Future ignored are the connected ones that are also part of the ignored ones so far
+        future_ignored = candidate.connected_names & ignored
+
+        # Add the candidate to the clique
+        clique.add(candidate_name)
+        cliques.extend(find_maximal_cliques(clique, future_candidates, future_ignored))
+        # Backtrack
+        clique.remove(candidate_name)
+    
+    return cliques
+
+maximal_cliques = find_maximal_cliques(set(), set(nodes_by_name.keys()), set())
+maximum_clique = sorted(maximal_cliques, reverse=True, key=len)[0]
+result = ",".join(sorted(x for x in maximum_clique))
 print(f"Result: {result}")
 if EXAMPLE_IDX is None and data == puzzle.input_data:
     submit(result)
