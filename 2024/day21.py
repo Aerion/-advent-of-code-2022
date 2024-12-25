@@ -118,7 +118,6 @@ def _get_pad_sequences_for_full_line(line, is_numpad):
     sequences = ["".join(x) for x in get_pad_sequences_for_line_idx(0, line, [], is_numpad)]
     return sequences
 
-@cache
 def split_sequence_into_subsequences_count(dirpad_sequence: str):
     sub_sequences_count = defaultdict(int)
     for sub_sequence in dirpad_sequence.split("A")[:-1]:
@@ -137,67 +136,15 @@ def get_subsequence_count_length(sub_sequence_count):
     result = sum(len(k) * v for k, v in sub_sequence_count.items())
     return result
 
-@cache
-def get_best_chunk_path(chunk):
-    possibilities = _get_pad_sequences_for_full_line(chunk, False)
-
-    best_length = 99999999999999
-    best_possibilities = None
-    for possibility in possibilities:
-        followup_possibilities = _get_pad_sequences_for_full_line(possibility, False)
-        length = min(len(x) for x in followup_possibilities)
-        if length < best_length:
-            best_possibilities = [possibility]
-            best_length = length
-        elif length == best_length:
-            best_possibilities.append(possibility)
-    assert best_length != 99999999999999
-    
-    if len(best_possibilities) > 1:
-        #print(possibilities)
-        min_nested_length = 9999999999999
-        final_best_possibility = None
-        for best_possibility in best_possibilities:
-            #print()
-            followup_possibilities = _get_pad_sequences_for_full_line(best_possibility, False)
-            for followup_possibility in followup_possibilities:
-                nested_followup_possibilities =_get_pad_sequences_for_full_line(followup_possibility, False)
-                nested_length = min(len(x) for x in nested_followup_possibilities)
-                if nested_length < min_nested_length:
-                    min_nested_length = length
-                    final_best_possibility = best_possibility
-                elif nested_length == min_nested_length:
-                    #print(nested_followup_possibilities)
-                    assert False # Please no equality again
-                #print(nested_followup_possibilities)
-        assert min_nested_length != 9999999999999
-        best_possibilities = [final_best_possibility]
-    assert len(best_possibilities) == 1 # Hopefully will never happen
-    return best_possibilities[0]
-
 def get_str_from_subsequences_count(subsequences_count: dict[str, int]):
     return "".join(k * v for k, v in subsequences_count.items())
-
-def get_nth_run(initial_str: str, n: int):
-    subsequences_count = split_sequence_into_subsequences_count(initial_str)
-    for _ in range(n):
-        next_subsequences_count = defaultdict(int)
-        for chunk, count in subsequences_count.items():
-            next_path = get_best_chunk_path(chunk)
-            next_path_subsequences_count = split_sequence_into_subsequences_count(next_path)
-            for next_chunk, next_count in next_path_subsequences_count.items():
-                next_subsequences_count[next_chunk] += next_count * count
-
-        subsequences_count = next_subsequences_count
-    
-    return subsequences_count
 
 def get_result_from_input(input: str, runs):
     min_length = 2**64
     numpad_sequences = get_numpad_sequences(input)
     for idx, numpad_sequence in enumerate(numpad_sequences):
         print(f"\tProcessing {numpad_sequence} ({idx+1}/{len(numpad_sequences)}) ", end="")
-        length = get_subsequence_count_length(get_nth_run(numpad_sequence, runs))
+        length = get_shortest_chunk_length(numpad_sequence, runs)
         print(f"{length=}")
         if length < min_length:
             min_length = length
@@ -206,6 +153,20 @@ def get_result_from_input(input: str, runs):
     result = numeric * min_length
     tuple_res = (result, min_length, numeric)
     return tuple_res
+
+@cache
+def get_shortest_chunk_length(chunk, level):
+    if level == 0:
+        return len(chunk)
+    total_length = 0
+    for sub_sequence, count in split_sequence_into_subsequences_count(chunk).items():
+        min_length = 2**64
+        for sequence_candidate in _get_pad_sequences_for_full_line(sub_sequence, False):
+            length = get_shortest_chunk_length(sequence_candidate, level - 1) * count
+            if length < min_length:
+                min_length = length
+        total_length += min_length
+    return total_length
 
 # Assertions
 def run_assertions():
@@ -224,31 +185,9 @@ def run_assertions():
 
     assert_equivalent(['<A^A>^^AvvvA', '<A^A^>^AvvvA', '<A^A^^>AvvvA'], get_numpad_sequences("029A"))
 
-    assert_strings('v<<A>>^A', get_best_chunk_path('<A'))
-    assert_strings('<A>A', get_best_chunk_path('^A'))
-    #assert_strings('vA<^AA>A', get_best_chunk_path('>^^A'))
-    #assert_strings('<vAAA>^A', get_best_chunk_path('vvvA'))
-
     subsequences_count = split_sequence_into_subsequences_count('<A^A>^^AvvvA')
     assert_dicts({'<A': 1, '^A': 1, '>^^A': 1, 'vvvA': 1}, subsequences_count)
     assert get_subsequence_count_length(subsequences_count) == len('<A^A>^^AvvvA')
-
-    expected_str_by_run = {
-        0: "v<<A>>^A<A>AvA<^AA>A<vAAA>^A",
-        1: "<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A"
-    }
-    for i in range(2):
-        print("Run", i)
-        next_subsequences_count = get_nth_run("<A^A>^^AvvvA", i + 1)
-        single_iteration_str = get_str_from_subsequences_count(next_subsequences_count)
-        get_result_from_input
-        expected = expected_str_by_run[i]
-        print(f"\tExpected: {expected}")
-        print(f"\tActual  : {single_iteration_str}")
-        assert get_subsequence_count_length(next_subsequences_count) == len(expected)
-        assert len(single_iteration_str) == len(expected)
-
-        subsequences_count = next_subsequences_count
 
     example_tests = {
         '029A': '<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A',
