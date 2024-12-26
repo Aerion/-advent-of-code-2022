@@ -33,33 +33,40 @@ class OpCode(IntEnum):
     MULT = 2
     HALT = 99
 
-program = [int(x) for x in data.split(",")]
-program[1] = 12
-program[2] = 2
-
-ip = 0
-while ip < len(program):
-    op_code = OpCode(program[ip])
-    if op_code == OpCode.HALT:
+result = None
+for noun in range(100):
+    if result != None:
         break
+    for verb in range(100):
+        program = [int(x) for x in data.split(",")]
+        program[1] = noun
+        program[2] = verb
 
-    left_operand = program[program[ip + 1]]
-    right_operand = program[program[ip + 2]]
-    output_pos = program[ip + 3]
+        ip = 0
+        while ip < len(program):
+            op_code = OpCode(program[ip])
+            if op_code == OpCode.HALT:
+                break
 
-    ip += 4
+            left_operand = program[program[ip + 1]]
+            right_operand = program[program[ip + 2]]
+            output_address = program[ip + 3]
 
-    if op_code == OpCode.ADD:
-        program[output_pos] = left_operand + right_operand
-        continue
-    if op_code == OpCode.MULT:
-        program[output_pos] = left_operand * right_operand
-        continue
+            ip += 4
 
-    print(f"[bold red]Unexpected op_code {op_code}[/bold red]")
-    assert False
+            if op_code == OpCode.ADD:
+                program[output_address] = left_operand + right_operand
+                continue
+            if op_code == OpCode.MULT:
+                program[output_address] = left_operand * right_operand
+                continue
 
-result = program[0]
+            print(f"[bold red]Unexpected op_code {op_code}[/bold red]")
+            assert False
+
+        if program[0] == 19690720:
+            result = 100 * noun + verb
+            break
 
 #################################################################
 # No changes after this line
