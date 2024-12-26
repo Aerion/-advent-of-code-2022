@@ -36,7 +36,9 @@ def fill_passwords(prefix: str, previous_digit: int, passwords: set[int]):
         if not MIN <= int(prefix) <= MAX:
             return
         for i in range(len(prefix) - 1):
-            if prefix[i + 1] == prefix[i]:
+            prev = None if i == 0 else prefix[i - 1]
+            next = None if i == len(prefix) - 2 else prefix[i + 2]
+            if prefix[i + 1] == prefix[i] and prefix[i] != prev and prefix[i] != next:
                 # There is adjacency
                 passwords.add(prefix)
                 return
