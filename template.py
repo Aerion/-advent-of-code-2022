@@ -28,7 +28,7 @@ else:
 # No changes before this line
 #################################################################
 
-result = 0
+result = None
 
 #################################################################
 # No changes after this line
@@ -36,5 +36,5 @@ result = 0
 
 _end_time = time.time()
 print(f"Result: {result} (in {timedelta(seconds=_end_time - _start_time)})", file=stderr)
-if EXAMPLE_IDX is None and data == puzzle.input_data:
+if result is not None and EXAMPLE_IDX is None and data == puzzle.input_data:
     submit(result)
