@@ -2,10 +2,12 @@
 
 from aocd import puzzle, submit
 from collections import defaultdict, deque
+from dataclasses import dataclass, field
 from datetime import timedelta
 from functools import cache
 from rich import print
 from sys import stderr
+from typing import Optional
 import time
 
 EXAMPLE_IDX = None

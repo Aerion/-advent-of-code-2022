@@ -16,7 +16,19 @@ _start_time = time.time()
 data = (puzzle.examples[EXAMPLE_IDX] if EXAMPLE_IDX is not None else puzzle).input_data
 if EXAMPLE_IDX == 0:
     # Override data if needed
-    # data = """REPLACE_ME"""
+    data = """COM)B
+B)C
+C)D
+D)E
+E)F
+B)G
+G)H
+D)I
+E)J
+J)K
+K)L
+K)YOU
+I)SAN"""
     pass
 
 print(f"Puzzle #{puzzle.day}", file=stderr)
@@ -33,6 +45,7 @@ else:
 @dataclass
 class Node:
     name: str
+    parent: any = None
     children: list = field(default_factory=list)
     height: Optional[int] = None
 
@@ -44,6 +57,7 @@ for line in data.splitlines():
         node_by_name[reference] = Node(reference)
     if orbiting not in node_by_name:
         node_by_name[orbiting] = Node(orbiting)
+    node_by_name[orbiting].parent = node_by_name[reference]
     node_by_name[reference].children.append(node_by_name[orbiting])
 
 def dfs_height(node: Node):
@@ -51,13 +65,21 @@ def dfs_height(node: Node):
         child.height = node.height + 1
         dfs_height(child)
 
-root = node_by_name["COM"]
-root.height = 0
-dfs_height(root)
+def find_path_to_com(node: Node):
+    path = []
+    while node.name != "COM":
+        path.append(node)
+        node = node.parent
+    return path
 
-result = 0
-for node in node_by_name.values():
-    result += node.height
+path_san_com = find_path_to_com(node_by_name["SAN"])
+path_you_com = find_path_to_com(node_by_name["YOU"])
+
+while path_san_com[-1] == path_you_com[-1]:
+    path_san_com.pop()
+    path_you_com.pop()
+
+result = len(path_san_com) + len(path_you_com) - 2
 
 #################################################################
 # No changes after this line
