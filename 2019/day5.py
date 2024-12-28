@@ -34,6 +34,10 @@ class OpCode(IntEnum):
     MULT = 2
     WRITE_AT = 3
     OUTPUT = 4
+    JNZ = 5,
+    JZ = 6
+    JLT = 7
+    JEQ = 8
     HALT = 99
 
 class ParameterMode(IntEnum):
@@ -46,6 +50,10 @@ parameters_count_by_op_code: dict[OpCode, int] = {
     OpCode.WRITE_AT: 1,
     OpCode.OUTPUT: 1,
     OpCode.HALT: 0,
+    OpCode.JNZ: 2,
+    OpCode.JZ: 2,
+    OpCode.JLT: 3,
+    OpCode.JEQ: 3,
 }
 
 def parse_instruction(ip: int, program: list[int]) -> tuple[OpCode, list[int]]:
@@ -93,14 +101,28 @@ while True:
         program[output_address] = program[parameters[0]] * program[parameters[1]]
         continue
     if op_code == OpCode.WRITE_AT:
-        input = 1
+        input = 5
         program[parameters[0]] = input
         continue
     if op_code == OpCode.OUTPUT:
         output.append(program[parameters[0]])
         continue
+    if op_code == OpCode.JNZ:
+        if program[parameters[0]] != 0:
+            ip = program[parameters[1]]
+        continue
+    if op_code == OpCode.JZ:
+        if program[parameters[0]] == 0:
+            ip = program[parameters[1]]
+        continue
+    if op_code == OpCode.JLT:
+        program[parameters[2]] = 1 if program[parameters[0]] < program[parameters[1]] else 0
+        continue
+    if op_code == OpCode.JEQ:
+        program[parameters[2]] = 1 if program[parameters[0]] == program[parameters[1]] else 0
+        continue
 
-    print(f"[bold red]Unexpected op_code {op_code}[/bold red]")
+    print(f"[bold red]Unexpected op_code {op_code}[/]")
     assert False
 
 result = output[-1]
