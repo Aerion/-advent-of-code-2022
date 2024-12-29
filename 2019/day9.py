@@ -172,7 +172,7 @@ assert run_program([109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99], 
 print("OK")
 
 program = [int(x) for x in data.split(",")]
-output = run_program(program, [1])
+output = run_program(program, [2])
 
 assert(len(output)) == 1
 result = output[0]
