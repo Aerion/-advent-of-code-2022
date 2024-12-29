@@ -51,29 +51,18 @@ if EXAMPLE_IDX == 0:
             print()
         print()
 
-
-for layer_idx in range(layers_count):
-    zero_digits_count = 0
-    for y in range(HEIGHT):
-        for x in range(WIDTH):
-            if get_val(layer_idx, x, y) == "0":
-                zero_digits_count += 1
-
-    if zero_digits_count > 0 and zero_digits_count < min_layer_zero_digits_count:
-        min_layer_idx = layer_idx
-        min_layer_zero_digits_count = zero_digits_count
-
-res_one_digit_count = 0
-res_two_digit_count = 0
 for y in range(HEIGHT):
     for x in range(WIDTH):
-        val = get_val(min_layer_idx, x, y)
-        if val == "1":
-            res_one_digit_count += 1
-        elif val == "2":
-            res_two_digit_count += 1
+        for layer_idx in range(layers_count):
+            val = get_val(layer_idx, x, y)
+            if val == "2":
+                continue
+            color = "black on black" if val == "0" else "white on white"
+            print(f"[{color}] [/]", end="")
+            break
+    print()
 
-result = res_one_digit_count * res_two_digit_count
+exit(0)
 
 #################################################################
 # No changes after this line
